@@ -12,50 +12,6 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-
-
-{-
-
-Welcome to the Haskell 101 codelab!
-
-To run this file, make sure you have the Haskell Platform, and simply:
-$ make
-$ ./codelab
-
-You can also load this file in ghci:
-
-$ ghci
-> :l Codelab
-> :l Main
-> main
-> :r
-> main
-
-It will fail hilariously (or ridiculously, depending on your sense of
-humor), because you're supposed to write some of the code! You have to
-replace and code everything that is named "codelab".
-
-Our goal, here, is to implement some of the built-in functions in the
-language, as a way to get familiar with the type system.
-
-Good luck and, most importantly, have fun!
-
--}
-
-
-
-
-
-{- #####################################################################
-   SECTION 0: setting up the codelab.
-
-   Nothing to see here, please go directly to section 1!
-
-   This section simply define the "codelab" alias that we'll use
-   everywhere in the code and still have it compile and does all the
-   necessary boilerplate: imports, compiler options, that kind of stuff.
--}
-
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 {-# OPTIONS_GHC -fno-warn-unused-matches #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds   #-}
@@ -72,10 +28,6 @@ import Prelude       hiding (null, head, tail, length, and, or, (++),
 codelab :: a
 codelab = error "SOMETHING IS NOT IMPLEMENTED!"
 
-
-
-
-
 {- #####################################################################
    SECTION 1: number manipulation
 
@@ -84,33 +36,24 @@ codelab = error "SOMETHING IS NOT IMPLEMENTED!"
 -}
 
 add :: Int -> Int -> Int
-add x y = codelab
+add x y = x + y
 
 subtract :: Int -> Int -> Int
-subtract x y = codelab
+subtract x y = x - y
 
 double :: Int -> Int
-double x = codelab
+double x = x * 2
 
 multiply :: Int -> Int -> Int
-multiply x y = codelab
-
--- Note that Haskell is strict about types even for basic integral types.
--- Int is never automatically converted to Double.  But you can use
--- fromIntegral to convert from any integral type to any number type.
+multiply x y = x * y
 
 divide :: Int -> Int -> Double
-divide x y = codelab
-
--- Remember that you can use if/then/else:
---
---  if <expr> then <expr> else <expr>
---
--- Integer is just like Int, except that it can store arbitrary large
--- numbers.
+divide x 0 = error "divide by zero"
+divide x y = fromIntegral x / fromIntegral y
 
 factorial :: Integer -> Integer
-factorial n = codelab
+factorial n = if n < 0 then error "factorial only defined for natural numbers"
+              else foldl (*) 1 [1..n]
 
 -- Expressions can be assigned names, called "bindings", using the
 -- following syntax:
@@ -145,35 +88,24 @@ data Minutes = Minutes Int
 --     let v = a `div` b
 
 hours :: Minutes -> Int
-hours m = codelab
+hours (Minutes m) = m `div` 60
 
--- In case you might need some mathematical functions, you can use
---
---     https://hoogle.haskell.org/
---
--- to search for anything supported by the standard library and beyond.
---
 -- Distance here means the number of minutes to get from m1 to m2.  For
 -- example, for 15 and 25, distance is 10.
 
 timeDistance :: Minutes -> Minutes -> Minutes
-timeDistance m1 m2 = codelab
+timeDistance (Minutes m) (Minutes n) = Minutes (abs (m - n))
 
 type Point = (Int, Int)
 
--- Do not forget about Hoogle, should you need a new function.
---
--- Notice, when you declare a new type with the "data" keyword you also
--- declare new constructor(s) that you can use to pattern match on.  But
--- when you are declaring a type alias with the "type" keyword, no
--- constructors are declared.  You will pattern match on the original type
--- you are aliasing - a tuple in this case, for example:
---
---     f :: Point -> Int
---     f (x, y) = abs x + abs y
-
 pointDistance :: Point -> Point -> Double
-pointDistance p1 p2 = codelab
+pointDistance (m, n) (u, v) = dist
+    where x     = fromIntegral $ abs (m - u)
+          y     = fromIntegral $ abs (n - v)
+          x2    = x ** 2
+          y2    = y ** 2
+          dist  = sqrt (x2 + y2)
+
 
 
 {- #####################################################################
@@ -190,27 +122,25 @@ pointDistance p1 p2 = codelab
 
 
 -- null tells you whether a list is empty or not
-
 null :: [a] -> Bool
-null fixme = codelab
+null [] = True
+null _  = False
 
 
 -- head returns the first element of the list
 -- if the list is empty, it panics: this function is partial
 
 head :: [a] -> a
-head []    = error "head: empty list"
-head fixme = codelab
+head []     = error "head: empty list"
+head (x:xs) = x
 
 
 -- tail returns everything but the first element
 -- if the list is empty it panics
 
 tail :: [a] -> [a]
-tail = codelab
-
-
-
+tail []     = error "tail: empty list"
+tail (x:xs) = xs
 
 
 {- #####################################################################
@@ -222,101 +152,55 @@ tail = codelab
 -}
 
 
--- Do you remember it from the slides?
-
 length :: [a] -> Int
-length l = codelab
-
+length xs = foldr (\_ n -> n + 1) 0 xs
 
 -- "and" returns True if all the boolean values in the list are True.
--- What do you think it returns for an empty list?
-
+-- prefer first defintion because it is lazier and short circuits
 and :: [Bool] -> Bool
-and l = codelab
-
+and [] = True
+and (x:xs) = if x == True then and xs else False
+--and xs = foldr (\a acc -> acc && a) True xs
+--and xs = foldl True (\a acc -> acc && a) xs
 
 -- "or" returns True if at least one value in the list is True.
--- What do you think it returns for an empty list?
-
+-- prefer first defintion because it is lazier and short circuits?
 or :: [Bool] -> Bool
-or l = codelab
-
+or [] = False
+or (x:xs) = if x == True then x else or xs
+-- and xs = foldr (\a acc -> acc || a) False
 
 -- "(++)" is the concatenation operator.  To concatenate two linked lists
 -- you have to chain the second one at the end of the first one.
-
 (++) :: [a] -> [a] -> [a]
-l1 ++ l2 = codelab
+l1 ++ [] = l1
+[] ++ l2 = l2
+(x:xs) ++ l2 = x : (xs ++ l2)
 
-
-
-
-
-{- #####################################################################
-   SECTION 5: abstractions
-
-   Have you noticed that we keep using the same pattern?  If the list is
-   empty we return a specific value.  If it is not, we call a function to
-   combine the element with the result of the recursive calls.
-
-   This is Haskell: if there is a pattern, it can (must) be abstracted!
-   Fortunately, some useful functions are here for us.
-
-   To understand the difference between foldr and foldl, remember that the
-   last letter indicates if the "reduction" function is left associative or
-   right associative: foldr goes from right to left, foldl goes from left
-   to right.
-
-   foldl :: (a -> x -> a) -> a -> [x] -> a
-   foldr :: (x -> a -> a) -> a -> [x] -> a
-   foldl (-) 0 [1,2,3,4]   ==   (((0 - 1) - 2) - 3) - 4   ==   -10
-   foldr (-) 0 [1,2,3,4]   ==   1 - (2 - (3 - (4 - 0)))   ==    -2
--}
-
-
--- You probably remember this one?  Nothing extraordinary here.
-
+-- map
+-- map (+1) [0, 1, 2] == [0 + 1, 1 + 1, 1 + 2] == [1, 2, 3]
 map :: (a -> b) -> [a] -> [b]
-map _ []     = codelab
-map f (a:as) = codelab
-
-
--- Same thing here for filter, except that we use it to introduce a new
--- syntax: those | are called "guards"; they let you specify different
--- implementations of your function depending on some Boolean
--- value. "otherwise" is not a keyword but simply a constant whose value is
--- True! Try to evaluate "otherwise" in GHCI.
---
--- Simple example of guards usage:
---   abs :: Int -> Int
---   abs x
---     | x < 0     = -x
---     | otherwise =  x
+map _ []     = []
+map f (a:as) = f a : map f as
 
 filter :: (a -> Bool) -> [a] -> [a]
-filter _ [] = codelab
+filter _ [] = []
 filter f (x:xs)
-  | codelab   = codelab
-  | otherwise = codelab
-
+  | (f x) == True = x : filter f xs
+  | otherwise = filter f xs
 
 -- foldl
 -- foldl (-) 0 [1,2,3,4]   ==   (((0 - 1) - 2) - 3) - 4   ==   -10
-
 foldl :: (a -> x -> a) -> a -> [x] -> a
-foldl _ a []     = codelab
-foldl f a (x:xs) = codelab
+foldl _ a []     = a
+foldl f a (x:xs) = foldl f (f a x) xs
 
 
 -- foldr
 -- foldr (-) 0 [1,2,3,4]   ==   1 - (2 - (3 - (4 - 0)))   ==    -2
-
 foldr :: (x -> a -> a) -> a -> [x] -> a
-foldr _ a []     = codelab
-foldr f a (x:xs) = codelab
-
-
-
+foldr _ a []     = a
+foldr f a (x:xs) = x `f` (foldr f a xs)
 
 
 {- #####################################################################
@@ -371,28 +255,21 @@ foldr f a (x:xs) = codelab
 
 
 -- If we were to fix the "head" function, how could we do that?
-
 safeHead :: [a] -> Maybe a
-safeHead []    = codelab
-safeHead (x:_) = codelab
+safeHead []    = Nothing
+safeHead (x:_) = Just x
 
 
 -- "isNothing" should not need an explanation by now!
-
 isNothing :: Maybe a -> Bool
-isNothing = codelab
-
+isNothing x = case x of Just _  -> False
+                        Nothing -> True
 
 -- The "fromMaybe" function is your way out of a Maybe value.
 -- It takes a default value to use in case our Maybe value is Nothing.
-
 fromMaybe :: a -> Maybe a -> a
-fromMaybe _ _ = codelab
--- Consider starting with these patterns:
---
--- fromMaybe def fixme = codelab
--- fromMaybe _   fixme = codelab
-
+fromMaybe d x = case x of Just a  -> a
+                          Nothing -> d
 
 -- The "maybe" function is an extended version of "fromMaybe".  Can you
 -- guess what it is supposed to do?
@@ -400,31 +277,6 @@ fromMaybe _ _ = codelab
 
 maybe :: b -> (a -> b) -> Maybe a -> b
 maybe _ _ _ = codelab
--- Consider starting with these patterns:
--- maybe b _ fixme = codelab
--- maybe _ f fixme = codelab
-
-
-
-
-
-{- #####################################################################
-   PARTING WORDS
-
-   Have you noticed that we pattern match with Maybe quite like we do
-   with lists? You haven't seen Either yet, but spoilers: the pattern
-   matching looks quite the same.
-
-   Could we, therefore, define an equivalent of map for Maybe? For Either?
-   But how could we write a function with the same name for different
-   types? Will we end up needing some kind of *shivers* interface?
-
-   Stay tuned for Haskell 102! :)
-
-   (If you want more, head below for a bonus section!)
--}
-
-
 
 
 
