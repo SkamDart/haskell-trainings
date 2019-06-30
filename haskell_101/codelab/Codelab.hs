@@ -11,7 +11,6 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
-
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 {-# OPTIONS_GHC -fno-warn-unused-matches #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds   #-}
@@ -19,11 +18,23 @@
 
 module Codelab where
 
-import Control.Monad        (void)
-import Data.Maybe           (isJust)
-import Text.Read            (readMaybe)
-import Prelude       hiding (null, head, tail, length, and, or, (++),
-                             map, filter, foldr, foldl, gcd)
+import Control.Monad (void)
+import Data.Maybe (isJust)
+import Prelude hiding
+  ( (++)
+  , and
+  , filter
+  , foldl
+  , foldr
+  , gcd
+  , head
+  , length
+  , map
+  , null
+  , or
+  , tail
+  )
+import Text.Read (readMaybe)
 
 codelab :: a
 codelab = error "SOMETHING IS NOT IMPLEMENTED!"
@@ -34,7 +45,6 @@ codelab = error "SOMETHING IS NOT IMPLEMENTED!"
    As we have not looked at any complex data structures yet, so the
    only thing we have for now are numbers.
 -}
-
 add :: Int -> Int -> Int
 add x y = x + y
 
@@ -52,47 +62,28 @@ divide x 0 = error "divide by zero"
 divide x y = fromIntegral x / fromIntegral y
 
 factorial :: Integer -> Integer
-factorial n = if n < 0 then error "factorial only defined for natural numbers"
-              else foldl (*) 1 [1..n]
-
--- Expressions can be assigned names, called "bindings", using the
--- following syntax:
---
---   let x = <expr1>
---    in <expr2>
---
--- Spacing is irrelevant - you can put spaces anywhere you want.  As for
--- the GCD itself, consider Euclid's algorithm:
---
---   https://en.wikipedia.org/wiki/Greatest_common_divisor#Using_Euclid's_algorithm
+factorial n =
+  if n < 0
+    then error "factorial only defined for natural numbers"
+    else foldl (*) 1 [1 .. n]
 
 gcd :: Int -> Int -> Int
-gcd a b = codelab
-
-
-
-
+gcd 0 b = b
+gcd a b = gcd (b `mod` a) a
 
 {- #####################################################################
    SECTION 2: simple pattern matching
 
    Not that we can define simple data structures, let's try using them.
 -}
-
-data Minutes = Minutes Int
-
--- Integer division is called "div".  If you want, you can use a function
--- of two arguments as an infix operator, by quoting it using backquotes,
--- like this:
---
---     let v = a `div` b
+data Minutes =
+  Minutes Int
 
 hours :: Minutes -> Int
 hours (Minutes m) = m `div` 60
 
 -- Distance here means the number of minutes to get from m1 to m2.  For
 -- example, for 15 and 25, distance is 10.
-
 timeDistance :: Minutes -> Minutes -> Minutes
 timeDistance (Minutes m) (Minutes n) = Minutes (abs (m - n))
 
@@ -100,13 +91,12 @@ type Point = (Int, Int)
 
 pointDistance :: Point -> Point -> Double
 pointDistance (m, n) (u, v) = dist
-    where x     = fromIntegral $ abs (m - u)
-          y     = fromIntegral $ abs (n - v)
-          x2    = x ** 2
-          y2    = y ** 2
-          dist  = sqrt (x2 + y2)
-
-
+  where
+    x = fromIntegral $ abs (m - u)
+    y = fromIntegral $ abs (n - v)
+    x2 = x ** 2
+    y2 = y ** 2
+    dist = sqrt (x2 + y2)
 
 {- #####################################################################
    SECTION 3: deconstructing lists
@@ -119,29 +109,22 @@ pointDistance (m, n) (u, v) = dist
      * []     the empty list
      * (x:xs) a cell containing the value x and followed by the list xs
 -}
-
-
 -- null tells you whether a list is empty or not
 null :: [a] -> Bool
 null [] = True
-null _  = False
-
+null _ = False
 
 -- head returns the first element of the list
 -- if the list is empty, it panics: this function is partial
-
 head :: [a] -> a
-head []     = error "head: empty list"
+head [] = error "head: empty list"
 head (x:xs) = x
-
 
 -- tail returns everything but the first element
 -- if the list is empty it panics
-
 tail :: [a] -> [a]
-tail []     = error "tail: empty list"
+tail [] = error "tail: empty list"
 tail (x:xs) = xs
-
 
 {- #####################################################################
    SECTION 4: recursion (c.f. SECTION 4)
@@ -150,8 +133,6 @@ tail (x:xs) = xs
    recursion. Here are a few more common functions for you to
    reimplement!
 -}
-
-
 length :: [a] -> Int
 length xs = foldr (\_ n -> n + 1) 0 xs
 
@@ -159,17 +140,23 @@ length xs = foldr (\_ n -> n + 1) 0 xs
 -- prefer first defintion because it is lazier and short circuits
 and :: [Bool] -> Bool
 and [] = True
-and (x:xs) = if x == True then and xs else False
+and (x:xs) =
+  if x == True
+    then and xs
+    else False
+
 --and xs = foldr (\a acc -> acc && a) True xs
 --and xs = foldl True (\a acc -> acc && a) xs
-
 -- "or" returns True if at least one value in the list is True.
 -- prefer first defintion because it is lazier and short circuits?
 or :: [Bool] -> Bool
 or [] = False
-or (x:xs) = if x == True then x else or xs
--- and xs = foldr (\a acc -> acc || a) False
+or (x:xs) =
+  if x == True
+    then x
+    else or xs
 
+-- and xs = foldr (\a acc -> acc || a) False
 -- "(++)" is the concatenation operator.  To concatenate two linked lists
 -- you have to chain the second one at the end of the first one.
 (++) :: [a] -> [a] -> [a]
@@ -180,7 +167,7 @@ l1 ++ [] = l1
 -- map
 -- map (+1) [0, 1, 2] == [0 + 1, 1 + 1, 1 + 2] == [1, 2, 3]
 map :: (a -> b) -> [a] -> [b]
-map _ []     = []
+map _ [] = []
 map f (a:as) = f a : map f as
 
 filter :: (a -> Bool) -> [a] -> [a]
@@ -192,16 +179,14 @@ filter f (x:xs)
 -- foldl
 -- foldl (-) 0 [1,2,3,4]   ==   (((0 - 1) - 2) - 3) - 4   ==   -10
 foldl :: (a -> x -> a) -> a -> [x] -> a
-foldl _ a []     = a
+foldl _ a [] = a
 foldl f a (x:xs) = foldl f (f a x) xs
-
 
 -- foldr
 -- foldr (-) 0 [1,2,3,4]   ==   1 - (2 - (3 - (4 - 0)))   ==    -2
 foldr :: (x -> a -> a) -> a -> [x] -> a
-foldr _ a []     = a
+foldr _ a [] = a
 foldr f a (x:xs) = x `f` (foldr f a xs)
-
 
 {- #####################################################################
    BONUS STAGE!
@@ -236,11 +221,6 @@ foldr f a (x:xs) = x `f` (foldr f a xs)
 
    This allows you to succinctly write your map / filters.
 -}
-
-
-
-
-
 {- #####################################################################
    SECTION 6: am I being indecisive? ....hmmmm Maybe?
 
@@ -252,33 +232,32 @@ foldr f a (x:xs) = x `f` (foldr f a xs)
 
    data Maybe a = Nothing | Just a
 -}
-
-
 -- If we were to fix the "head" function, how could we do that?
 safeHead :: [a] -> Maybe a
-safeHead []    = Nothing
+safeHead [] = Nothing
 safeHead (x:_) = Just x
-
 
 -- "isNothing" should not need an explanation by now!
 isNothing :: Maybe a -> Bool
-isNothing x = case x of Just _  -> False
-                        Nothing -> True
+isNothing x =
+  case x of
+    Just _ -> False
+    Nothing -> True
 
 -- The "fromMaybe" function is your way out of a Maybe value.
 -- It takes a default value to use in case our Maybe value is Nothing.
 fromMaybe :: a -> Maybe a -> a
-fromMaybe d x = case x of Just a  -> a
-                          Nothing -> d
+fromMaybe d x =
+  case x of
+    Just a -> a
+    Nothing -> d
 
 -- The "maybe" function is an extended version of "fromMaybe".  Can you
 -- guess what it is supposed to do?
 -- ...doesn't it kinda look like fold?
-
 maybe :: b -> (a -> b) -> Maybe a -> b
-maybe _ _ _ = codelab
-
-
+maybe b _ Nothing = b
+maybe _ f (Just a) = f a
 
 {- #####################################################################
    BONUS SECTION: let's play a game.
@@ -295,42 +274,37 @@ maybe _ _ _ = codelab
    To play a game, simply type "play" in GHCI!
    Feel free to try to modify the code and tweak it as you wish.
 -}
-
-
 -- Some simple types for our game.  Ignore the "deriving" part (or don't,
 -- I'm a comment, not a cop).
+data Hand
+  = Rock
+  | Paper
+  | Scissors
+  deriving (Show, Read, Eq)
 
-data Hand = Rock | Paper | Scissors deriving (Show, Read, Eq)
 type Score = (Int, Int)
-
 
 -- "winsOver" tells you if a hand wins over another one.  It introduces a
 -- nifty trick: any binary function can be used in an infix way if
 -- surrounded by backquotes.
-
 winsOver :: Hand -> Hand -> Bool
-Rock     `winsOver` Scissors = True
-Paper    `winsOver` Rock     = True
-Scissors `winsOver` Paper    = True
-_        `winsOver` _        = False
-
+Rock `winsOver` Scissors = True
+Paper `winsOver` Rock = True
+Scissors `winsOver` Paper = True
+_ `winsOver` _ = False
 
 -- "computeScore"... computes the score!
 -- Remember those | guards?
-
 computeScore :: Hand -> Hand -> Score
 computeScore h1 h2
   | h1 `winsOver` h2 = (1, 0)
   | h2 `winsOver` h1 = (0, 1)
-  | otherwise        = (0, 0)
-
+  | otherwise = (0, 0)
 
 -- "combine"... combines!
 -- Remember pattern matching?
-
 combine :: Score -> Score -> Score
 combine (a1, a2) (b1, b2) = (a1 + b1, a2 + b2)
-
 
 -- Ok, here's where you come in.
 --
@@ -349,7 +323,6 @@ combine (a1, a2) (b1, b2) = (a1 + b1, a2 + b2)
 --     foldl1       :: (a -> a -> a) -> [a] -> a
 --     map          :: (a -> b) -> [a] -> [b]
 --     zip          :: [a] -> [b] -> [(a, b)]
-
 pairScore :: (Hand, Hand) -> Score
 pairScore = codelab codelab
 
@@ -360,43 +333,35 @@ score h1 h2 = codelab codelab $ codelab codelab $ codelab h1 h2
 --       then it scores each play,
 --       then it sums the scores.
 --       merge -> map -> reduce
-
-
 -- We play up to 3.
-
 gameOver :: Score -> Bool
 gameOver (s1, s2) = s1 >= 3 || s2 >= 3
-
 
 -- Below is the impure IO code that lets us read hands from the standard
 -- input and play the game!
 -- Beware: Haskell 102 spoilers!
-
 readHand :: String -> IO Hand
 readHand prompt = do
-  putStr prompt                  -- prints the prompt
-  handText <- getLine            -- reads one line of input
-  case readMaybe handText of     -- tries to convert it to Hand
-     Just h  -> return h         -- success: our result is h
-     Nothing -> readHand prompt  -- failure: we try again
+  putStr prompt -- prints the prompt
+  handText <- getLine -- reads one line of input
+  case readMaybe handText -- tries to convert it to Hand
+        of
+    Just h -> return h -- success: our result is h
+    Nothing -> readHand prompt -- failure: we try again
 
 playTurn :: Score -> IO Score
 playTurn oldScore = do
   h1 <- readHand "p1: "
   h2 <- readHand "p2: "
   let turnScore = computeScore h1 h2
-      newScore  = combine oldScore turnScore
+      newScore = combine oldScore turnScore
   print newScore
   if gameOver newScore
-    then return   newScore
+    then return newScore
     else playTurn newScore
 
 play :: IO ()
-play = void $ playTurn (0,0)
-
-
-
-
+play = void $ playTurn (0, 0)
 
 {- #####################################################################
    BONUS BONUS SECTION: wait, you actually read all of that?
@@ -404,16 +369,16 @@ play = void $ playTurn (0,0)
    Just for fun, here are a few common one-liners; can you guess what they
    do, what they are, without testing them in GHCI?
 -}
-
-
 mystic :: [Integer]
 mystic = 0 : 1 : zipWith (+) mystic (tail mystic)
 
 valor :: [Integer]
-valor = let s l = head l : s [n | n <- tail l, n `mod` head l /= 0] in s [2..]
+valor =
+  let s l = head l : s [n | n <- tail l, n `mod` head l /= 0]
+   in s [2 ..]
 
 instinct :: [Int] -> [Int]
-instinct []     = []
-instinct (x:xs) = instinct [a | a <- xs, a < x] ++ [x] ++ instinct (filter (>= x) xs)
-
+instinct [] = []
+instinct (x:xs) =
+  instinct [a | a <- xs, a < x] ++ [x] ++ instinct (filter (>= x) xs)
 -- -*- fill-column: 75; -*-
