@@ -276,8 +276,7 @@ codeToMap code = foldr addColorToMap empty code
 -- For bonus points, reimplement it with "filter" or with a list comprehension.
 
 countBlacks :: Code -> Code -> Int
-countBlacks l1 l2 = codelab $ codelab codelab $ codelab codelab l1 l2
-
+countBlacks l1 l2 = sum (map fromEnum (zipWith (==) l1 l2))
 
 -- [4.4]
 -- This one computes the total number of colors in common between two
@@ -290,22 +289,22 @@ countBlacks l1 l2 = codelab $ codelab codelab $ codelab codelab l1 l2
 --     sum       :: [Int] -> Int
 
 countTotal :: Code -> Code -> Int
-countTotal c1 c2 = codelab $ codelab compareColor codelab
+countTotal c1 c2 = sum $ map compareColor allColors
   where compareColor :: Color -> Int
-        compareColor color = min (codelab) (codelab)
+        compareColor color = min (getCount color cmap1) (getCount color cmap2)
         cmap1, cmap2 :: ColorMap
-        cmap1 = codelab c1
-        cmap2 = codelab c2
+        cmap1 = codeToMap c1
+        cmap2 = codeToMap c2
 
 
 -- [4.5]
 -- Finally, "countScore" takes two codes and computes the score. :)
 
 countScore :: Code -> Code -> Score
-countScore c1 c2 = codelab
-  where black = codelab
-        total = codelab
-        white = codelab
+countScore c1 c2 = Score black white
+  where black = countBlacks c1 c2
+        total = countTotal c1 c2
+        white = total - black
 
 
 
@@ -344,10 +343,10 @@ countScore c1 c2 = codelab
 allCodesDo :: Int -> [Code]
 allCodesDo s
   | s <  0    = error "allCodes: size was lower than 0"
-  | s == 0    = codelab
-  | otherwise = do color <- codelab
-                   code <- codelab
-                   return codelab
+  | s == 0    = [[]]
+  | otherwise = do color <- allColors
+                   code <- allCodes $ s - 1
+                   return (color : code)
 
 -- [5.2]
 -- Unlike generators, a "do" block can return any wrapped value.  For
@@ -360,8 +359,8 @@ allCodesDo s
 
 duplicatesList :: Int -> [Int]
 duplicatesList len =
-  do i <- [1..codelab]
-     codelab
+  do i <- [1..len]
+     [i, i]
 
 -- [5.3]
 -- How about the case when the length of different "blocks" would be
@@ -381,7 +380,10 @@ duplicatesList len =
 
 oddlyDuplicateList :: Int -> [Int]
 oddlyDuplicateList len =
-  do codelab
+  do i <- [1..len]
+     if odd i
+       then [i, i]
+       else [i]
 
 -- When you solve [5.3], think about the fact that when coding in "do"
 -- notation you have the full power of the language, but you are building
