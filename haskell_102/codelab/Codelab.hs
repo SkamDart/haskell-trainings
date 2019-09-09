@@ -12,47 +12,6 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-
-
-{-
-
-Welcome to the Haskell 102 codelab!
-
-To run the codelab, make sure you have the Haskell Platform, and simply:
-$ make
-$ ./test_codelab
-$ ./codelab play
-
-You can also test your functions in GHCI:
-
-$ ghci
-> :l Tests
-> main            -- run the tests
-> :r              -- recompile
-
-
-It will fail hilariously (or ridiculously, depending on your sense of
-humor), because you're supposed to write some of the code! You have to
-replace and code everything that is named "codelab". Our goal, here, is to
-implement a game of Mastermind, and a solver for it. Good luck, and may the
-odds always be in your favor!
-
--}
-
-
-
-
-
-{- #####################################################################
-   SECTION 0: setting up the codelab.
-
-   Nothing to see here, please go directly to section 1!
-
-   This section simply define the "codelab" alias that we'll use
-   everywhere in the code and still have it compile and does all the
-   necessary boilerplate: imports, compiler options, that kind of stuff.
--}
-
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 {-# OPTIONS_GHC -fno-warn-unused-matches #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds   #-}
@@ -103,11 +62,8 @@ data Color = Red     -- this is a constructor, of type Color
 
 allColors :: [Color]
 allColors = [minColor .. maxColor] -- enumFromTo minColor maxColor
-  where minColor = codelab
-        maxColor = codelab
-
-
-
+  where minColor = Red
+        maxColor = Magenta
 
 
 {- #####################################################################
@@ -133,7 +89,9 @@ type ColorMap = Map Color Int
 -- https://hackage.haskell.org/package/base/docs/Data-Maybe.html
 
 getIntOr0 :: Maybe Int -> Int
-getIntOr0 = codelab
+getIntOr0 Nothing = 0
+getIntOr0 (Just a) = a
+
 
 
 -- [2.2]
@@ -144,7 +102,7 @@ getIntOr0 = codelab
 --     lookup :: key -> Map key value -> Maybe value
 
 getCount :: Color -> ColorMap -> Int
-getCount color cmap = codelab
+getCount color cmap = getIntOr0 (lookup color cmap)
 
 
 -- [2.3]
@@ -158,10 +116,8 @@ getCount color cmap = codelab
 -- For a fancier version, you can look up "insertWith".
 
 addColorToMap :: Color -> ColorMap -> ColorMap
-addColorToMap color cmap = codelab
-
-
-
+addColorToMap color cmap = insert color count cmap
+  where count = (getCount color cmap) + 1
 
 
 {- #####################################################################
@@ -200,7 +156,7 @@ data ErrorOr a = Error ErrorMsg -- an error with a message
 -- "wrapValue" takes a value, and puts it in the context of an "ErrorOr a".
 
 wrapValue :: a -> ErrorOr a
-wrapValue = codelab
+wrapValue = Value
 
 
 -- [3.2]
@@ -210,8 +166,8 @@ wrapValue = codelab
 -- pattern match to decide what to do.
 
 fmapValue :: (a -> b) -> ErrorOr a -> ErrorOr b
-fmapValue _ (Error msg) = codelab
-fmapValue f (Value   x) = codelab
+fmapValue _ (Error msg) = (Error msg)
+fmapValue f (Value   x) = Value (f x)
 
 
 -- [3.3]
@@ -222,8 +178,9 @@ fmapValue f (Value   x) = codelab
 -- a contextual value...
 
 apValue :: ErrorOr (a -> b) -> ErrorOr a -> ErrorOr b
-apValue (Error msg) _   = codelab
-apValue (Value   f) eoa = codelab
+apValue (Error msg) _   = (Error msg)
+apValue _           (Error msg) = (Error msg)
+apValue (Value   f) (Value x) = Value (f x)
 
 
 -- [3.4]
@@ -231,8 +188,8 @@ apValue (Value   f) eoa = codelab
 -- "fmapValue", except we don't have to wrap the result.
 
 bindValue :: (a -> ErrorOr b) -> ErrorOr a -> ErrorOr b
-bindValue _ (Error msg) = codelab
-bindValue f (Value   x) = codelab
+bindValue _ (Error msg) = Error msg
+bindValue f (Value   x) = f x
 
 
 
@@ -281,8 +238,8 @@ data Score = Score
 allCodes :: Int -> [Code]
 allCodes s
   | s <  0    = error "allCodes: size was lower than 0"
-  | s == 0    = codelab
-  | otherwise = [color:code | color <- codelab, code <- codelab]
+  | s == 0    = [[]]
+  | otherwise = [color:code | color <- allColors, code <- allCodes (s - 1)]
 
 
 -- [4.2]
@@ -295,7 +252,7 @@ allCodes s
 --     empty         ::                                    ColorMap
 
 codeToMap :: Code -> ColorMap
-codeToMap code = codelab
+codeToMap code = foldr addColorToMap empty code
 
 
 -- [4.3]
